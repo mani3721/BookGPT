@@ -15,7 +15,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { messages } = await request.json();
+    const { messages, model, language } = await request.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
@@ -24,12 +24,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: messages.map((m: { role: string; content: string }) => ({
+    const languageInstruction =
+      language === 'ta'
+        ? 'Always respond in Tamil (தமிழ்).'
+        : 'Always respond in English.';
+
+    const systemMessage = {
+      role: 'system' as const,
+      content: `You are BookGPT, a helpful AI assistant for book lovers. ${languageInstruction} Help users summarize books, explain concepts, recommend reads, and answer questions about their library. Use markdown for formatting.`,
+    };
+
+    const apiMessages = [
+      systemMessage,
+      ...messages.map((m: { role: string; content: string }) => ({
         role: m.role as 'system' | 'user' | 'assistant',
         content: m.content,
       })),
-      model: process.env.GROQ_CHAT_MODEL || 'llama-3.3-70b-versatile',
+    ];
+
+    const chatCompletion = await groq.chat.completions.create({
+      model: model || process.env.GROQ_CHAT_MODEL || 'llama-3.3-70b-versatile',
+      messages: apiMessages,
       temperature: 1,
       max_tokens: 8192,
       top_p: 1,

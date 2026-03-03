@@ -716,12 +716,56 @@
   .chatgpt-input-wrapper {
     @apply sticky bottom-0 p-4 bg-[var(--bg-primary)];
   }
-  .chatgpt-input-form {
-    @apply flex items-center gap-2 p-2 bg-white rounded-2xl border border-[var(--border-subtle)];
+  .chatgpt-options-wrap {
+    @apply flex items-center gap-1 self-end;
+  }
+  .chatgpt-option-wrap {
+    @apply relative flex items-center self-end;
+  }
+  .chatgpt-model-wrap {
+    @apply relative flex items-center self-end;
+  }
+  .chatgpt-model-btn {
+    @apply flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-[#212a3b] bg-transparent border-0 transition-colors hover:bg-[var(--bg-secondary)];
+  }
+  .chatgpt-model-dropdown {
+    @apply absolute right-0 bottom-full mb-2 py-1.5 min-w-[260px] bg-white rounded-xl border border-[var(--border-subtle)];
     box-shadow: var(--shadow-soft);
   }
+  .chatgpt-model-option {
+    @apply w-full text-left px-4 py-3 hover:bg-[var(--bg-secondary)] transition-colors;
+  }
+  .chatgpt-model-option-active {
+    @apply bg-[var(--bg-secondary)];
+  }
+  .chatgpt-model-option-main {
+    @apply flex items-center justify-between;
+  }
+  .chatgpt-model-option-desc {
+    @apply mt-0.5 text-xs text-[var(--text-muted)];
+  }
+  .chatgpt-model-option-simple {
+    @apply py-2.5;
+  }
+  .chatgpt-input-form {
+    @apply flex items-end gap-2 p-2 bg-white rounded-2xl border border-[var(--border-subtle)];
+    box-shadow: var(--shadow-soft);
+  }
+  .chatgpt-attach-wrap {
+    @apply relative flex items-center self-end;
+  }
+  .chatgpt-attach-btn {
+    @apply p-2.5 rounded-xl text-[#212a3b] transition-colors hover:bg-[var(--bg-secondary)] disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+  .chatgpt-attach-dropdown {
+    @apply absolute left-0 bottom-full mb-2 py-1.5 min-w-[180px] bg-white rounded-xl border border-[var(--border-subtle)];
+    box-shadow: var(--shadow-soft);
+  }
+  .chatgpt-attach-option {
+    @apply w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-[#212a3b] hover:bg-[var(--bg-secondary)] transition-colors;
+  }
   .chatgpt-input {
-    @apply flex-1 px-4 py-3 text-base outline-none placeholder:text-[var(--text-muted)] bg-transparent;
+    @apply flex-1 min-w-0 min-h-[80px] max-h-[200px] px-4 py-3 text-base outline-none placeholder:text-[var(--text-muted)] bg-transparent resize-none;
   }
   .chatgpt-send-btn {
     @apply p-2.5 rounded-xl bg-[#663820] text-white transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed;
