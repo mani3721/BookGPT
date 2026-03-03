@@ -680,6 +680,27 @@
   .chatgpt-bubble-assistant {
     @apply bg-[#f3e4c7] text-[#212a3b] rounded-bl-sm;
   }
+  .chatgpt-markdown {
+    @apply text-base leading-7;
+  }
+  .chatgpt-markdown strong {
+    @apply font-bold text-[#212a3b];
+  }
+  .chatgpt-markdown em {
+    @apply italic;
+  }
+  .chatgpt-markdown p {
+    @apply my-0 first:mt-0 last:mb-0;
+  }
+  .chatgpt-markdown p + p {
+    @apply mt-2;
+  }
+  .chatgpt-markdown ul, .chatgpt-markdown ol {
+    @apply my-2 pl-6;
+  }
+  .chatgpt-markdown code {
+    @apply px-1.5 py-0.5 rounded bg-[#212a3b]/10 text-sm;
+  }
   .chatgpt-typing {
     @apply flex gap-1.5;
   }

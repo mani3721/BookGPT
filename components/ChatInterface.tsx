@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, MessageCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 
 interface ChatMessage {
@@ -39,19 +40,60 @@ const ChatInterface = () => {
     if (!text) return;
 
     setInput('');
-    setMessages((prev) => [...prev, { role: 'user', content: text }]);
+    const userMessage: ChatMessage = { role: 'user', content: text };
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Simulate AI response (replace with actual API call when ready)
-    await new Promise((r) => setTimeout(r, 800));
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: 'assistant',
-        content: `I'm your BookGPT assistant. You asked: "${text}"\n\nSelect a book from your Library to have voice conversations with AI about that specific book. This chat interface is ready for you to connect your preferred AI API.`,
-      },
-    ]);
-    setIsLoading(false);
+    const apiMessages = [...messages, userMessage].map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: apiMessages }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `API error: ${res.status}`);
+      }
+
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = '';
+
+      if (reader) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          assistantContent += chunk;
+          setMessages((prev) => {
+            const next = [...prev];
+            next[next.length - 1] = {
+              role: 'assistant',
+              content: assistantContent,
+            };
+            return next;
+          });
+        }
+      }
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: `Error: ${err instanceof Error ? err.message : 'Something went wrong'}`,
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isEmpty = messages.length === 0;
@@ -97,21 +139,28 @@ const ChatInterface = () => {
                     msg.role === 'user' ? 'chatgpt-bubble-user' : 'chatgpt-bubble-assistant'
                   )}
                 >
-                  {msg.content}
+                  {msg.role === 'assistant' ? (
+                    <div className="chatgpt-markdown">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.content
+                  )}
                 </div>
               </div>
             ))}
-            {isLoading && (
-              <div className="chatgpt-message chatgpt-message-assistant">
-                <div className="chatgpt-bubble chatgpt-bubble-assistant">
-                  <span className="chatgpt-typing">
-                    <span />
-                    <span />
-                    <span />
-                  </span>
+            {isLoading &&
+              (messages.length === 0 || messages[messages.length - 1]?.role === 'user') && (
+                <div className="chatgpt-message chatgpt-message-assistant">
+                  <div className="chatgpt-bubble chatgpt-bubble-assistant">
+                    <span className="chatgpt-typing">
+                      <span />
+                      <span />
+                      <span />
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         )}
       </div>
