@@ -1,13 +1,21 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, MessageCircle, Plus, Paperclip, ChevronDown, Languages } from 'lucide-react';
+import { Send, MessageCircle, Plus, Paperclip, ChevronDown, Languages, Youtube, Link } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+}
+
+interface ChatInterfaceProps {
+  chatId?: string | null;
+  initialMessages?: ChatMessage[];
+  onMessagesSaved?: () => void;
+  onChatCreated?: (id: string) => void;
 }
 
 const SUGGESTIONS = [
@@ -19,8 +27,8 @@ const SUGGESTIONS = [
 
 const MODEL_OPTIONS = [
   { value: 'openai/gpt-oss-120b', name: 'GPT-OSS Standard', description: 'Most capable for complex tasks' },
-  { value: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', description: 'Efficient for everyday tasks' },
-  { value: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', description: 'Fastest for quick answers' },
+  { value: 'qwen/qwen3-32b', name: 'Qwen3', description: 'Efficient for everyday tasks' },
+  { value: 'openai/gpt-oss-20b', name: 'GPT-OSS Lite', description: 'Fastest for quick answers' },
 ];
 
 const LANGUAGE_OPTIONS = [
@@ -28,11 +36,24 @@ const LANGUAGE_OPTIONS = [
   { value: 'ta', name: 'Tamil' },
 ];
 
-const ChatInterface = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+const ChatInterface = ({
+  chatId = null,
+  initialMessages = [],
+  onMessagesSaved,
+  onChatCreated,
+}: ChatInterfaceProps) => {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const currentChatIdRef = useRef<string | null>(chatId);
+
+  useEffect(() => {
+    setMessages(initialMessages);
+    currentChatIdRef.current = chatId;
+  }, [chatId, initialMessages]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [attachOpen, setAttachOpen] = useState(false);
+  const [pasteUrlType, setPasteUrlType] = useState<'youtube' | 'website' | null>(null);
+  const [pasteUrlValue, setPasteUrlValue] = useState('');
   const [modelOpen, setModelOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState(MODEL_OPTIONS[0]);
@@ -70,15 +91,56 @@ const ChatInterface = () => {
     scrollToBottom();
   }, [messages]);
 
+  const saveMessagesToChat = async (chatIdToSave: string | null, msgs: ChatMessage[]) => {
+    if (!chatIdToSave) return;
+    try {
+      const res = await fetch(`/api/chats/${chatIdToSave}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: msgs }),
+      });
+      if (res.ok) onMessagesSaved?.();
+    } catch (e) {
+      console.error('Failed to save chat:', e);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent, customText?: string) => {
     e.preventDefault();
-    const text = customText || input.trim();
-    if (!text) return;
+    let text = customText || input.trim();
+    const url = pasteUrlValue.trim();
+    if (!text && !url) return;
 
+    if (url) {
+      const urlLabel = pasteUrlType === 'youtube' ? 'YouTube video' : 'Website';
+      text = text ? `[${urlLabel}]: ${url}\n\n${text}` : `[${urlLabel}]: ${url}\n\nPlease help me with this.`;
+      setPasteUrlValue('');
+      setPasteUrlType(null);
+    }
     setInput('');
     const userMessage: ChatMessage = { role: 'user', content: text };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
+
+    let activeChatId = currentChatIdRef.current;
+    if (!activeChatId) {
+      try {
+        const createRes = await fetch('/api/chats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: text.slice(0, 50) }),
+        });
+        if (createRes.ok) {
+          const chat = await createRes.json();
+          const newId = chat._id as string;
+          activeChatId = newId;
+          currentChatIdRef.current = newId;
+          onChatCreated?.(newId);
+        }
+      } catch (err) {
+        console.error('Failed to create chat:', err);
+      }
+    }
 
     const apiMessages = [...messages, userMessage].map((m) => ({
       role: m.role,
@@ -123,6 +185,10 @@ const ChatInterface = () => {
           });
         }
       }
+      if (activeChatId) {
+        const finalMessages = [...apiMessages, { role: 'assistant' as const, content: assistantContent }];
+        await saveMessagesToChat(activeChatId, finalMessages);
+      }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -131,6 +197,9 @@ const ChatInterface = () => {
           content: `Error: ${err instanceof Error ? err.message : 'Something went wrong'}`,
         },
       ]);
+      if (activeChatId) {
+        await saveMessagesToChat(activeChatId, [...apiMessages, { role: 'assistant' as const, content: `Error: ${err instanceof Error ? err.message : 'Something went wrong'}` }]);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -181,7 +250,7 @@ const ChatInterface = () => {
                 >
                   {msg.role === 'assistant' ? (
                     <div className="chatgpt-markdown">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                     </div>
                   ) : (
                     msg.content
@@ -206,10 +275,54 @@ const ChatInterface = () => {
       </div>
 
       <div className="chatgpt-input-wrapper">
+        {pasteUrlType && (
+          <div className="chatgpt-paste-url-bar">
+            <span className="chatgpt-paste-url-label">
+              {pasteUrlType === 'youtube' ? 'YouTube URL' : 'Website URL'}:
+            </span>
+            <input
+              type="url"
+              value={pasteUrlValue}
+              onChange={(e) => setPasteUrlValue(e.target.value)}
+              placeholder={`Paste ${pasteUrlType === 'youtube' ? 'YouTube' : 'website'} link here...`}
+              className="chatgpt-paste-url-input"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setPasteUrlValue('');
+                setPasteUrlType(null);
+              }}
+              className="chatgpt-paste-url-close"
+              aria-label="Cancel"
+            >
+              ×
+            </button>
+          </div>
+        )}
         <form
           onSubmit={(e) => handleSubmit(e)}
           className="chatgpt-input-form"
         >
+         <div className='chatgpt-input-area'>
+         <div className='flex flex-1'>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+              placeholder="Message BookGPT..."
+              disabled={isLoading}
+              className="chatgpt-input"
+              rows={3}
+            />
+          </div>
+          <div className="chatgpt-options-wrap">
           <div ref={attachRef} className="chatgpt-attach-wrap">
             <button
               type="button"
@@ -233,6 +346,28 @@ const ChatInterface = () => {
                   <Paperclip className="size-4" />
                   Add files
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasteUrlType('youtube');
+                    setAttachOpen(false);
+                  }}
+                  className="chatgpt-attach-option"
+                >
+                  <Youtube className="size-4" />
+                  YouTube URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPasteUrlType('website');
+                    setAttachOpen(false);
+                  }}
+                  className="chatgpt-attach-option"
+                >
+                  <Link className="size-4" />
+                  Website URL
+                </button>
               </div>
             )}
             <input
@@ -250,21 +385,6 @@ const ChatInterface = () => {
               }}
             />
           </div>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSubmit(e);
-              }
-            }}
-            placeholder="Message BookGPT..."
-            disabled={isLoading}
-            className="chatgpt-input"
-            rows={3}
-          />
-          <div className="chatgpt-options-wrap">
             <div ref={languageRef} className="chatgpt-option-wrap">
               <button
                 type="button"
@@ -332,9 +452,10 @@ const ChatInterface = () => {
               )}
             </div>
           </div>
+         </div>
           <button
             type="submit"
-            disabled={!input.trim() || isLoading}
+            disabled={(!input.trim() && !pasteUrlValue.trim()) || isLoading}
             className="chatgpt-send-btn"
           >
             <Send className="size-5" />

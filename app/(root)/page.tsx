@@ -1,9 +1,9 @@
-import ChatInterface from '@/components/ChatInterface';
+import ChatPage from '@/components/ChatPage';
 
 const HomePage = () => {
   return (
-    <main className="w-full">
-      <ChatInterface />
+    <main className="w-full h-[100vh]">
+      <ChatPage />
     </main>
   );
 };

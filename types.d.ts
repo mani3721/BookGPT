@@ -37,6 +37,20 @@ export interface IBookSegment extends Document {
     updatedAt: Date;
 }
 
+export interface IChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+}
+
+export interface IChat extends Document {
+    _id: string;
+    clerkId: string;
+    title: string;
+    messages: IChatMessage[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface IVoiceSession extends Document {
     _id: string;
     clerkId: string;

@@ -614,13 +614,20 @@
   }
 
   /* ===========================================
+     CHAT SIDEBAR
+     =========================================== */
+  .chat-sidebar {
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+  }
+
+  /* ===========================================
      CHATGPT-STYLE CHAT INTERFACE
      =========================================== */
   .chatgpt-container {
-    @apply flex flex-col h-[calc(100vh-var(--navbar-height))] max-w-3xl mx-auto;
+    @apply flex flex-col h-[calc(100vh-var(--navbar-height))] max-w-3xl mx-auto h-full;
   }
   .chatgpt-messages {
-    @apply flex-1 overflow-y-auto px-4 py-6 scroll-smooth;
+    @apply flex-1 overflow-y-auto px-4 pt-20 scroll-smooth;
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -701,6 +708,19 @@
   .chatgpt-markdown code {
     @apply px-1.5 py-0.5 rounded bg-[#212a3b]/10 text-sm;
   }
+  .chatgpt-markdown table {
+    @apply w-full my-3 border-collapse;
+  }
+  .chatgpt-markdown th,
+  .chatgpt-markdown td {
+    @apply border border-[#212a3b]/20 px-3 py-2 text-left;
+  }
+  .chatgpt-markdown th {
+    @apply bg-[#212a3b]/10 font-semibold;
+  }
+  .chatgpt-markdown tr:nth-child(even) {
+    @apply bg-[#212a3b]/5;
+  }
   .chatgpt-typing {
     @apply flex gap-1.5;
   }
@@ -716,8 +736,21 @@
   .chatgpt-input-wrapper {
     @apply sticky bottom-0 p-4 bg-[var(--bg-primary)];
   }
+  .chatgpt-paste-url-bar {
+    @apply flex items-center gap-2 mb-2 p-2 bg-white rounded-xl border border-[var(--border-subtle)];
+    box-shadow: var(--shadow-soft-sm);
+  }
+  .chatgpt-paste-url-label {
+    @apply text-sm font-medium text-[#212a3b] shrink-0;
+  }
+  .chatgpt-paste-url-input {
+    @apply flex-1 min-w-0 px-3 py-2 text-sm outline-none placeholder:text-[var(--text-muted)] bg-transparent border-0;
+  }
+  .chatgpt-paste-url-close {
+    @apply p-1 text-lg text-[var(--text-muted)] hover:text-[#212a3b] transition-colors;
+  }
   .chatgpt-options-wrap {
-    @apply flex items-center gap-1 self-end;
+    @apply flex items-center gap-1 self-end py-1;
   }
   .chatgpt-option-wrap {
     @apply relative flex items-center self-end;
@@ -750,6 +783,9 @@
   .chatgpt-input-form {
     @apply flex items-end gap-2 p-2 bg-white rounded-2xl border border-[var(--border-subtle)];
     box-shadow: var(--shadow-soft);
+  }
+  .chatgpt-input-area {
+    @apply flex-1 min-w-0 flex flex-col;
   }
   .chatgpt-attach-wrap {
     @apply relative flex items-center self-end;

@@ -49,8 +49,7 @@ You are allowed to:
 - Adapt to beginner or advanced level students
 
 Default language: Clear simple English.
-If user prefers, respond in simple Tamil or mixed Tanglish.
-`;
+If user prefers, respond in simple Tamil or mixed Tanglish.`;
 
 export async function POST(request: Request) {
   try {
