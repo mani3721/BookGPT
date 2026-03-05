@@ -759,10 +759,10 @@
     @apply p-1 text-lg text-[var(--text-muted)] hover:text-[#212a3b] transition-colors;
   }
   .chatgpt-options-wrap {
-    @apply flex items-center gap-1 self-end py-1;
+    @apply flex items-center gap-1 self-end py-1 flex-wrap;
   }
   .chatgpt-option-wrap {
-    @apply relative flex items-center self-end;
+    @apply relative flex items-center self-end min-w-0;
   }
   .chatgpt-model-wrap {
     @apply relative flex items-center self-end;
@@ -813,7 +813,32 @@
     @apply flex-1 min-w-0 min-h-[80px] max-h-[200px] px-4 py-3 text-base outline-none placeholder:text-[var(--text-muted)] bg-transparent resize-none;
   }
   .chatgpt-send-btn {
-    @apply p-2.5 rounded-xl bg-[#663820] text-white transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed;
+    @apply p-2.5 rounded-xl bg-[#663820] text-white transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed shrink-0;
+  }
+
+  /* Chat input footer - mobile responsive */
+  @media (max-width: 640px) {
+    .chatgpt-input-wrapper {
+      @apply px-3 py-3;
+    }
+    .chatgpt-input-form {
+      @apply gap-2;
+    }
+    .chatgpt-options-wrap {
+      @apply flex-wrap gap-2 w-full min-w-0;
+    }
+    .chatgpt-model-btn {
+      @apply px-2.5 py-1.5 text-xs max-w-[140px] min-w-0;
+    }
+    .chatgpt-model-btn-text {
+      @apply truncate min-w-0;
+    }
+    .chatgpt-model-dropdown {
+      @apply min-w-[200px] max-w-[min(280px,calc(100vw-2rem))];
+    }
+    .chatgpt-attach-dropdown {
+      @apply max-w-[min(180px,calc(100vw-2rem))];
+    }
   }
 
   /* ===========================================

@@ -407,9 +407,9 @@ const ChatInterface = ({
                 className="chatgpt-model-btn"
                 aria-label="Choose language"
               >
-                <Languages className="size-4" />
-                {selectedLanguage.name}
-                <ChevronDown className="size-4" />
+                <Languages className="size-4 shrink-0" />
+                <span className="chatgpt-model-btn-text">{selectedLanguage.name}</span>
+                <ChevronDown className="size-4 shrink-0" />
               </button>
               {languageOpen && (
                 <div className="chatgpt-model-dropdown">
@@ -439,8 +439,8 @@ const ChatInterface = ({
                 className="chatgpt-model-btn"
                 aria-label="Choose model"
               >
-                {selectedModel.name}
-                <ChevronDown className="size-4" />
+                <span className="chatgpt-model-btn-text">{selectedModel.name}</span>
+                <ChevronDown className="size-4 shrink-0" />
               </button>
               {modelOpen && (
                 <div className="chatgpt-model-dropdown">
