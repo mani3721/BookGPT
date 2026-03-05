@@ -114,19 +114,14 @@ const ChatSidebar = ({
   return (
     <div
       className={cn(
-        'chat-sidebar flex flex-col bg-[var(--bg-primary)] border-r border-[var(--border-subtle)] transition-all duration-300',
-        // Mobile: fixed overlay, slide in from left (below navbar)
-        'fixed md:relative left-0 z-50 md:z-auto',
-        'top-[var(--navbar-height,80px)] h-[calc(100vh-var(--navbar-height,80px))] md:top-auto md:h-auto',
-        'transform transition-transform duration-300 ease-out',
+        'chat-sidebar',
         showFullSidebar ? 'w-72' : 'w-14',
-        // On mobile: hidden by default, slide in when open
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        isMobileOpen && 'chat-sidebar--mobile-open'
       )}
     >
       {showFullSidebar && (
         <>
-          <div className="chat-sidebar-header flex items-center gap-2 px-4 py-4 border-b border-[var(--border-subtle)] shrink-0">
+          <div className="chat-sidebar-header">
             <Image src="/assets/logo.png" alt="BookGPT" width={36} height={22} className="object-contain" />
             <span className="font-bold text-lg text-[#212a3b]">BookGPT</span>
           </div>
