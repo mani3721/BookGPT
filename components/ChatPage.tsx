@@ -58,14 +58,14 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="flex w-full h-[calc(100vh-var(--navbar-height,80px))]">
+    <div className="flex w-full h-[calc(100vh-var(--navbar-height,80px))] min-h-0">
       <ChatSidebar
         chatId={chatId}
         onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
         refreshTrigger={refreshTrigger}
       />
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 min-h-0 flex flex-col">
         <ChatInterface
           chatId={chatId}
           initialMessages={initialMessages}

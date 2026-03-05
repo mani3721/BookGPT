@@ -619,28 +619,37 @@
   .chat-sidebar {
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
   }
+  .chat-sidebar-list {
+    scrollbar-width: thin;
+    scrollbar-color: #d4c4a8 transparent;
+  }
+  .chat-sidebar-list::-webkit-scrollbar {
+    width: 6px;
+  }
+  .chat-sidebar-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .chat-sidebar-list::-webkit-scrollbar-thumb {
+    background: #d4c4a8;
+    border-radius: 3px;
+  }
+  .chat-sidebar-list::-webkit-scrollbar-thumb:hover {
+    background: #c4b498;
+  }
 
   /* ===========================================
      CHATGPT-STYLE CHAT INTERFACE
      =========================================== */
   .chatgpt-container {
-    @apply flex flex-col h-[calc(100vh-var(--navbar-height))] max-w-3xl mx-auto h-full;
+    @apply flex flex-col flex-1 min-h-0 w-full max-w-3xl mx-auto;
   }
   .chatgpt-messages {
     @apply flex-1 overflow-y-auto px-4 pt-20 scroll-smooth;
+    scrollbar-width: none; /* Firefox - hide default scrollbar */
+    -ms-overflow-style: none; /* IE/Edge */
 
     &::-webkit-scrollbar {
-      width: 6px;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: #d4c4a8;
-      border-radius: 3px;
-    }
-    &::-webkit-scrollbar-thumb:hover {
-      background: #c4b498;
+      display: none; /* Chrome, Safari - hide default scrollbar */
     }
   }
   .chatgpt-empty {
