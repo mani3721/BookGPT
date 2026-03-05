@@ -13,6 +13,7 @@ const ChatPage = () => {
   const [chatId, setChatId] = useState<string | null>(null);
   const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const loadChat = useCallback(async (id: string) => {
     try {
@@ -55,15 +56,27 @@ const ChatPage = () => {
 
   const handleSelectChat = (id: string | null) => {
     setChatId(id);
+    setMobileSidebarOpen(false); // Close sidebar on mobile when selecting a chat
   };
 
   return (
-    <div className="flex w-full h-[calc(100vh-var(--navbar-height,80px))] min-h-0">
+    <div className="flex w-full h-[calc(100vh-var(--navbar-height,80px))] min-h-0 relative">
+      {/* Mobile backdrop */}
+      {mobileSidebarOpen && (
+        <button
+          type="button"
+          onClick={() => setMobileSidebarOpen(false)}
+          className="md:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+          aria-label="Close sidebar"
+        />
+      )}
       <ChatSidebar
         chatId={chatId}
         onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
         refreshTrigger={refreshTrigger}
+        mobileSidebarOpen={mobileSidebarOpen}
+        onMobileSidebarClose={() => setMobileSidebarOpen(false)}
       />
       <div className="flex-1 min-w-0 min-h-0 flex flex-col">
         <ChatInterface
@@ -74,6 +87,7 @@ const ChatPage = () => {
             setChatId(id);
             setRefreshTrigger((t) => t + 1);
           }}
+          onOpenSidebar={() => setMobileSidebarOpen(true)}
         />
       </div>
     </div>

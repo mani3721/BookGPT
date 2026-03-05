@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, MessageCircle, Plus, Paperclip, ChevronDown, Languages, Youtube, Link } from 'lucide-react';
+import { Send, MessageCircle, Plus, Paperclip, ChevronDown, Languages, Youtube, Link, PanelLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,7 @@ interface ChatInterfaceProps {
   initialMessages?: ChatMessage[];
   onMessagesSaved?: () => void;
   onChatCreated?: (id: string) => void;
+  onOpenSidebar?: () => void;
 }
 
 const SUGGESTIONS = [
@@ -41,6 +42,7 @@ const ChatInterface = ({
   initialMessages = [],
   onMessagesSaved,
   onChatCreated,
+  onOpenSidebar,
 }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const currentChatIdRef = useRef<string | null>(chatId);
@@ -209,6 +211,19 @@ const ChatInterface = ({
 
   return (
     <div className="chatgpt-container">
+      {/* Mobile: menu button to open sidebar */}
+      {onOpenSidebar && (
+        <div className="md:hidden flex items-center px-4 py-3 border-b border-[var(--border-subtle)] shrink-0">
+          <button
+            type="button"
+            onClick={onOpenSidebar}
+            className="p-2 rounded-lg text-[#212a3b] hover:bg-[var(--bg-secondary)] transition-colors"
+            aria-label="Open chat history"
+          >
+            <PanelLeft className="size-5" />
+          </button>
+        </div>
+      )}
       <div ref={scrollRef} className="chatgpt-messages">
         {isEmpty ? (
           <div className="chatgpt-empty">

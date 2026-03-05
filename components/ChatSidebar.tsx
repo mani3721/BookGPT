@@ -17,6 +17,8 @@ interface ChatSidebarProps {
   onSelectChat: (id: string | null) => void;
   onNewChat: () => void;
   refreshTrigger?: number;
+  mobileSidebarOpen?: boolean;
+  onMobileSidebarClose?: () => void;
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -59,7 +61,14 @@ function groupChatsByTime(chats: ChatItem[]): { label: string; chats: ChatItem[]
   return groups.filter((g) => g.chats.length > 0);
 }
 
-const ChatSidebar = ({ chatId, onSelectChat, onNewChat, refreshTrigger = 0 }: ChatSidebarProps) => {
+const ChatSidebar = ({
+  chatId,
+  onSelectChat,
+  onNewChat,
+  refreshTrigger = 0,
+  mobileSidebarOpen = false,
+  onMobileSidebarClose,
+}: ChatSidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [chats, setChats] = useState<ChatItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,14 +107,24 @@ const ChatSidebar = ({ chatId, onSelectChat, onNewChat, refreshTrigger = 0 }: Ch
 
   const groupedChats = groupChatsByTime(chats);
 
+  const isMobileOpen = mobileSidebarOpen;
+  // On mobile when open: always full width. On desktop: respect collapsed state.
+  const showFullSidebar = isMobileOpen || !collapsed;
+
   return (
     <div
       className={cn(
-        'chat-sidebar flex flex-col bg-[var(--bg-primary)] border-r border-[var(--border-subtle)] transition-all duration-300 relative',
-        collapsed ? 'w-14' : 'w-72'
+        'chat-sidebar flex flex-col bg-[var(--bg-primary)] border-r border-[var(--border-subtle)] transition-all duration-300',
+        // Mobile: fixed overlay, slide in from left (below navbar)
+        'fixed md:relative left-0 z-50 md:z-auto',
+        'top-[var(--navbar-height,80px)] h-[calc(100vh-var(--navbar-height,80px))] md:top-auto md:h-auto',
+        'transform transition-transform duration-300 ease-out',
+        showFullSidebar ? 'w-72' : 'w-14',
+        // On mobile: hidden by default, slide in when open
+        isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
       )}
     >
-      {!collapsed && (
+      {showFullSidebar && (
         <>
           <div className="chat-sidebar-header flex items-center gap-2 px-4 py-4 border-b border-[var(--border-subtle)] shrink-0">
             <Image src="/assets/logo.png" alt="BookGPT" width={36} height={22} className="object-contain" />
@@ -182,16 +201,29 @@ const ChatSidebar = ({ chatId, onSelectChat, onNewChat, refreshTrigger = 0 }: Ch
         </>
       )}
 
+      {/* Collapse toggle - desktop only */}
       <button
         type="button"
         onClick={() => setCollapsed((c) => !c)}
-        className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-white border border-[var(--border-subtle)] shadow-sm text-[#212a3b] hover:bg-[var(--bg-secondary)] transition-colors"
+        className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 items-center justify-center rounded-full bg-white border border-[var(--border-subtle)] shadow-sm text-[#212a3b] hover:bg-[var(--bg-secondary)] transition-colors"
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <ChevronRight className="size-3.5" /> : <ChevronLeft className="size-3.5" />}
       </button>
 
-      {collapsed && (
+      {/* Close button - mobile only */}
+      {isMobileOpen && onMobileSidebarClose && (
+        <button
+          type="button"
+          onClick={onMobileSidebarClose}
+          className="md:hidden absolute top-4 right-4 p-2 rounded-lg text-[#212a3b] hover:bg-[var(--bg-secondary)] transition-colors"
+          aria-label="Close sidebar"
+        >
+          <ChevronLeft className="size-5 rotate-180" />
+        </button>
+      )}
+
+      {!showFullSidebar && (
         <div className="flex flex-col items-center py-4 gap-2">
           <Image src="/assets/logo.png" alt="BookGPT" width={28} height={18} className="object-contain" />
           <button
